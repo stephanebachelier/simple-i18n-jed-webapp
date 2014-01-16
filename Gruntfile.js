@@ -53,11 +53,9 @@ module.exports = function (grunt) {
                     'test/spec/**/*.js'
                 ]
             },
-            jst: {
-                files: [
-                    '<%= yeoman.app %>/scripts/templates/*.ejs'
-                ],
-                tasks: ['jst']
+            handlebars: {
+                files: ['<%= yeoman.app %>/scripts/templates/**/*.html'],
+                tasks: ['handlebars']
             },
             test: {
                 files: ['<%= yeoman.app %>/scripts/{,*/}*.js', 'test/spec/**/*.js'],
@@ -255,13 +253,24 @@ module.exports = function (grunt) {
                 rjsConfig: '<%= yeoman.app %>/scripts/main.js'
             }
         },
-        jst: {
-            options: {
-                amd: true
-            },
+        handlebars: {
             compile: {
+                options: {
+                    amd: true,
+                    namespace: 'templates',
+                    processName: function(filePath) {
+                        var matches = filePath.match(new RegExp(yeomanConfig.app+ '\/scripts\/templates\/(.*).html'));
+                        return matches ? matches[1] : filePath;
+                    },
+                    processContent: function(content, filepath) {
+                      content = content.replace(/^[\x20\t]+/mg, '').replace(/[\x20\t]+$/mg, '');
+                      content = content.replace(/^[\r\n]+/, '').replace(/[\r\n]*$/, '');
+                      content = content.replace(/\n/g, '');
+                      return content;
+                    }
+                },
                 files: {
-                    '.tmp/scripts/templates.js': ['<%= yeoman.app %>/scripts/templates/*.ejs']
+                    '.tmp/scripts/templates.js': ['<%= yeoman.app %>/scripts/templates/**/*.html']
                 }
             }
         },
@@ -293,7 +302,7 @@ module.exports = function (grunt) {
                 'clean:server',
                 'coffee',
                 'createDefaultTemplate',
-                'jst',
+                'handlebars',
                 'connect:test',
                 'watch:livereload'
             ]);
@@ -303,7 +312,7 @@ module.exports = function (grunt) {
             'clean:server',
             'coffee:dist',
             'createDefaultTemplate',
-            'jst',
+            'handlebars',
             'connect:livereload',
             'open',
             'watch'
@@ -314,7 +323,7 @@ module.exports = function (grunt) {
         'clean:server',
         'coffee',
         'createDefaultTemplate',
-        'jst',
+        'handlebars',
         'connect:test',
         'mocha',
         'watch:test'
@@ -324,7 +333,7 @@ module.exports = function (grunt) {
         'clean:dist',
         'coffee',
         'createDefaultTemplate',
-        'jst',
+        'handlebars',
         'useminPrepare',
         'requirejs',
         'imagemin',
